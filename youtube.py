@@ -1,19 +1,46 @@
 from pytube import YouTube
 import ffmpeg
 from pathlib import Path
+from pydub import AudioSegment
 
-DIR = '1/'
-VIDEO_PATH = '{}video'.format(DIR)
-AUDIO_PATH = '{}audio'.format(DIR)
+""" bug pytube in extract.py
+        def apply_descrambler(stream_data: Dict, key: str) -> None:
+should be            
+            cipher_url = [
+                parse_qs(formats[i]["signatureCipher"]) for i, data in enumerate(formats)
+            ]       
+was
+        cipher_url = [
+                parse_qs(formats[i]["Cipher"]) for i, data in enumerate(formats)
+            ]
+"""
+DIR = Path(__file__).resolve().parent
+VIDEO_PATH = DIR.joinpath('video')
+AUDIO_PATH = DIR.joinpath('audio')
 
-if DIR[-1] != '/':
-    DIR += '/'
-
-# url = input("vvedite URL_youteme: ")
-url_youtube = 'https://www.youtube.com/watch?v=DPJv5u1EcaM'
+url_youtube = input("enter URL_youtube: ")
+print('\n')
 
 
-def getVideoAudio(url):
+def out_red(text):
+    return "\033[31m {}\033[0m".format(text)
+
+
+def out_green(text):
+    return "\033[32m {}\033[0m".format(text)
+
+
+def get_video_audio(url):
+    """Get parameters video from youtube url
+
+        Get parameters from youtube, chooses 1080p video and
+        audio 128kbps
+
+    :param str url:
+        The html contents.
+    :return:
+        parameters video content and audio content
+    """
     video = YouTube(url)
     list_video = video.streams
     video_mas = []
@@ -28,52 +55,110 @@ def getVideoAudio(url):
     video_for_download = max(video_mas, key=lambda k: video_mas[0])[1]
     audio_for_download = ''
 
-
     for value, key in audio_mas:
         if value == "128kbps":
             audio_for_download = key
         elif audio_for_download == '':
             audio_for_download = key
 
+    print(out_green('vidio - '), video_for_download)
+    print(out_green('audio - '), audio_for_download)
+
     return [video_for_download, audio_for_download, video.title]
 
 
-def downloadVideoAudio(videoParam, audioParam):
+def download_video(videoParam):
+    """ Download FulHD video with youtube
+
+    :param videoParam:
+        video parameters on youtube
+    :return:
+        return the path to the video file
+    """
     videoParam.download(filename='video', output_path=DIR)
+    input_video = ffmpeg.input(VIDEO_PATH.with_suffix('.mp4'))
+    return input_video
+
+
+def download_audio(audioParam):
+    """Download audio with youtube
+
+    :param audioParam:
+        audio parameters on youtube
+    :return:
+        return the path to the audio file
+    """
     audioParam.download(filename='audio', output_path=DIR)
-
-    input_video = ffmpeg.input(VIDEO_PATH + '.mp4')
-    if Path('1/audio.mp4').exists():
-        input_audio = ffmpeg.input(AUDIO_PATH + '.mp4')
+    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
+        input_audio = ffmpeg.input(AUDIO_PATH.with_suffix('.mp4'))
     else:
-        input_audio = ffmpeg.input(AUDIO_PATH + '.webm')
-
-    return (input_video, input_audio)
-
-
-def createVideo(videoPath, audioPath, titleFile):
-    ffmpeg.concat(videoPath, audioPath, v=1, a=1).output('{}{}.mp4'.format(DIR, titleFile)).run()
+        input_audio = ffmpeg.input(AUDIO_PATH.with_suffix('.webm'))
+    return input_audio
 
 
-def delFile():
-    path = Path(VIDEO_PATH + '.mp4')
-    path.unlink()
-    if Path(AUDIO_PATH + '.mp4').exists():
-        path = Path(AUDIO_PATH + '.mp4')
+def create_video(videoPath, audioPath, titleFile):
+    """ combines video and audio file
+
+    :param videoPath:
+        path to the video file
+    :param audioPath:
+        path to the audio file
+    :param titleFile:
+        name video on youtube
+    :return: None
+    """
+    output_path = DIR.joinpath(titleFile).with_suffix('.mp4')
+    try:
+        ffmpeg.concat(videoPath, audioPath, v=1, a=1).output(str(output_path)).run()
+    except:
+        output_path = DIR.joinpath('new_file').with_suffix('.mp4')
+        ffmpeg.concat(videoPath, audioPath, v=1, a=1).output(str(output_path)).run()
+
+
+def create_audio(titleFile):
+    """ converting audio file to mp3
+
+    :param titleFile:
+        name video on youtube
+    :return: None
+    """
+    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
+        mp4_version = AudioSegment.from_file(AUDIO_PATH.with_suffix('.mp4'), "mp4")
     else:
-        path = Path(AUDIO_PATH + '.webm')
-    path.unlink()
+        mp4_version = AudioSegment.from_file(AUDIO_PATH.with_suffix('.webm'), "webm")
+    mp4_version.export(DIR.joinpath(titleFile).with_suffix('.mp3'), format="mp3")
 
 
-getVideoAudio(url_youtube)
+def del_file():
+    """ delet audio file and video file downloaded with youtube
 
-video, audio, title = getVideoAudio(url_youtube)
+    :return: None
+    """
+    path = Path(VIDEO_PATH.with_suffix('.mp4'))
+    if Path(path).exists():
+        path.unlink()
+    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
+        path = Path(AUDIO_PATH.with_suffix('.mp4'))
+        path.unlink()
+    elif Path(AUDIO_PATH.with_suffix('.webm')).exists():
+        path = Path(AUDIO_PATH.with_suffix('.webm'))
+        path.unlink()
 
-videoPath, audioPath = downloadVideoAudio(video, audio)
 
-createVideo(videoPath, audioPath, title)
+print('1 - Download video with audio FulHD')
+print('2 - Download audio mp3')
+number = input(out_green('Push number - '))
 
-delFile()
+if int(number) == 1:
+    video, audio, title = get_video_audio(url_youtube)
+    videoPath = download_video(video)
+    audioPath = download_audio(audio)
+    create_video(videoPath, audioPath, title)
+elif int(number) == 2:
+    video, audio, title = get_video_audio(url_youtube)
+    audioPath = download_audio(audio)
+    create_audio(title)
+else:
+    print(out_red('incorrect values entered'))
 
-
-
+del_file()
