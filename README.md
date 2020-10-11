@@ -5,11 +5,8 @@ You can download audio mp3 from video.
 
 
 ### bug pytube in extract.py
-```
-code block
-```
 
-'''        
+```
        def apply_descrambler(stream_data: Dict, key: str) -> None:
 should be            
             cipher_url = [
@@ -19,4 +16,4 @@ was
         cipher_url = [
                 parse_qs(formats[i]["Cipher"]) for i, data in enumerate(formats)
             ]
-'''
+```
