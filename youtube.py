@@ -64,7 +64,7 @@ def get_video_audio(url):
     print(out_green('vidio - '), video_for_download)
     print(out_green('audio - '), audio_for_download)
 
-    return [video_for_download, audio_for_download, video.title]
+    return [video_for_download, audio_for_download, video.title.replace('\\', ' ').replace('/', ' ').replace('\'', ' ').replace('\"', ' ')]
 
 
 def download_video(videoParam):
