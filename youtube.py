@@ -3,17 +3,7 @@ import ffmpeg
 from pathlib import Path
 from pydub import AudioSegment
 
-""" bug pytube in extract.py
-        def apply_descrambler(stream_data: Dict, key: str) -> None:
-should be            
-            cipher_url = [
-                parse_qs(formats[i]["signatureCipher"]) for i, data in enumerate(formats)
-            ]       
-was
-        cipher_url = [
-                parse_qs(formats[i]["Cipher"]) for i, data in enumerate(formats)
-            ]
-"""
+
 DIR = Path(__file__).resolve().parent
 VIDEO_PATH = DIR.joinpath('video')
 AUDIO_PATH = DIR.joinpath('audio')
