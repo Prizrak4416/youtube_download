@@ -41,8 +41,11 @@ def get_video_audio(url):
             video_mas.append((i.fps, i))
         if i.type == 'audio':
             audio_mas.append((i.abr, i))
-
-    video_for_download = max(video_mas, key=lambda k: video_mas[0])[1]
+    try:
+        video_for_download = max(video_mas, key=lambda k: video_mas[0])[1]
+        print(out_green('vidio - '), video_for_download)
+    except:
+        video_for_download = False
     audio_for_download = ''
 
     for value, key in audio_mas:
@@ -51,7 +54,6 @@ def get_video_audio(url):
         elif audio_for_download == '':
             audio_for_download = key
 
-    print(out_green('vidio - '), video_for_download)
     print(out_green('audio - '), audio_for_download)
 
     return [video_for_download, audio_for_download, video.title.replace('\\', ' ').replace('/', ' ').replace('\'', ' ').replace('\"', ' ')]
@@ -141,9 +143,12 @@ number = input(out_green('Push number - '))
 
 if int(number) == 1:
     video, audio, title = get_video_audio(url_youtube)
-    videoPath = download_video(video)
-    audioPath = download_audio(audio)
-    create_video(videoPath, audioPath, title)
+    if video == False:
+        print(out_red("video with 1080p don't have"))
+    else:
+        videoPath = download_video(video)
+        audioPath = download_audio(audio)
+        create_video(videoPath, audioPath, title)
 elif int(number) == 2:
     video, audio, title = get_video_audio(url_youtube)
     audioPath = download_audio(audio)
