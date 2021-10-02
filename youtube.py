@@ -3,7 +3,6 @@ import ffmpeg
 from pathlib import Path
 from pydub import AudioSegment
 
-
 DIR = Path(__file__).resolve().parent
 VIDEO_PATH = DIR.joinpath('video')
 AUDIO_PATH = DIR.joinpath('audio')
@@ -56,7 +55,8 @@ def get_video_audio(url):
 
     print(out_green('audio - '), audio_for_download)
 
-    return [video_for_download, audio_for_download, video.title.replace('\\', ' ').replace('/', ' ').replace('\'', ' ').replace('\"', ' ')]
+    return [video_for_download, audio_for_download,
+            video.title.replace('\\', ' ').replace('/', ' ').replace('\'', ' ').replace('\"', ' ')]
 
 
 def download_video(videoParam):
@@ -107,17 +107,18 @@ def create_video(videoPath, audioPath, titleFile):
         ffmpeg.concat(videoPath, audioPath, v=1, a=1).output(str(output_path)).run()
 
 
-def create_audio(titleFile):
+def create_audio(titleFile, audio_fomat):
     """ converting audio file to mp3
 
     :param titleFile:
         name video on youtube
     :return: None
     """
-    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
-        mp4_version = AudioSegment.from_file(AUDIO_PATH.with_suffix('.mp4'), "mp4")
+
+    if audio_fomat == 'mp4':
+        mp4_version = AudioSegment.from_file(AUDIO_PATH, "mp4")
     else:
-        mp4_version = AudioSegment.from_file(AUDIO_PATH.with_suffix('.webm'), "webm")
+        mp4_version = AudioSegment.from_file(AUDIO_PATH, "webm")
     mp4_version.export(DIR.joinpath(titleFile).with_suffix('.mp3'), format="mp3")
 
 
@@ -151,8 +152,9 @@ if int(number) == 1:
         create_video(videoPath, audioPath, title)
 elif int(number) == 2:
     video, audio, title = get_video_audio(url_youtube)
+    audio_format = audio.mime_type.split('/')[1]
     audioPath = download_audio(audio)
-    create_audio(title)
+    create_audio(title, audio_format)
 else:
     print(out_red('incorrect values entered'))
 
