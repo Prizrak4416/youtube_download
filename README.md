@@ -3,6 +3,7 @@
 sudo apt install ffmpeg <br/>
 pip install pytube <br/>
 pip install pydub <br/>
+pip install ffmpeg-python
 <br/>
 
 

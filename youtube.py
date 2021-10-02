@@ -68,7 +68,7 @@ def download_video(videoParam):
         return the path to the video file
     """
     videoParam.download(filename='video', output_path=DIR)
-    input_video = ffmpeg.input(VIDEO_PATH.with_suffix('.mp4'))
+    input_video = ffmpeg.input(VIDEO_PATH)
     return input_video
 
 
@@ -81,10 +81,7 @@ def download_audio(audioParam):
         return the path to the audio file
     """
     audioParam.download(filename='audio', output_path=DIR)
-    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
-        input_audio = ffmpeg.input(AUDIO_PATH.with_suffix('.mp4'))
-    else:
-        input_audio = ffmpeg.input(AUDIO_PATH.with_suffix('.webm'))
+    input_audio = ffmpeg.input(AUDIO_PATH)
     return input_audio
 
 
@@ -127,15 +124,10 @@ def del_file():
 
     :return: None
     """
-    path = Path(VIDEO_PATH.with_suffix('.mp4'))
-    if Path(path).exists():
-        path.unlink()
-    if Path(AUDIO_PATH.with_suffix('.mp4')).exists():
-        path = Path(AUDIO_PATH.with_suffix('.mp4'))
-        path.unlink()
-    elif Path(AUDIO_PATH.with_suffix('.webm')).exists():
-        path = Path(AUDIO_PATH.with_suffix('.webm'))
-        path.unlink()
+    if Path(VIDEO_PATH).exists():
+        VIDEO_PATH.unlink()
+    if Path(AUDIO_PATH).exists():
+        AUDIO_PATH.unlink()
 
 
 print('1 - Download video with audio FulHD')
